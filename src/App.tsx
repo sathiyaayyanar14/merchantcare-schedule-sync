@@ -10,6 +10,7 @@ import ManageBookingPage from "./pages/ManageBookingPage";
 import Admin from "./pages/Admin";
 import TeamAvailability from "./pages/TeamAvailability";
 import NotFound from "./pages/NotFound";
+import TeamMemberBookings from "./pages/TeamMemberBookings";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,8 @@ const App = () => (
           <Route path="/manage/:bookingId" element={<ManageBookingPage />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/team/availability" element={<TeamAvailability />} />
+          <Route path="/team/availability/:memberId" element={<TeamAvailability />} />
+          <Route path="/admin/team/:memberId" element={<TeamMemberBookings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

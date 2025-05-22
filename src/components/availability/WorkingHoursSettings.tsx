@@ -5,6 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { TeamMember } from '@/types';
+
+interface WorkingHoursSettingsProps {
+  teamMember: TeamMember;
+}
 
 const DAYS_OF_WEEK = [
   { id: 'monday', label: 'Monday' },
@@ -16,8 +21,7 @@ const DAYS_OF_WEEK = [
   { id: 'sunday', label: 'Sunday' },
 ];
 
-const WorkingHoursSettings = () => {
-  const { teamMembers } = useApp();
+const WorkingHoursSettings: React.FC<WorkingHoursSettingsProps> = ({ teamMember }) => {
   const [workingDays, setWorkingDays] = useState({
     monday: true,
     tuesday: true,
@@ -58,9 +62,9 @@ const WorkingHoursSettings = () => {
   return (
     <div>
       <div className="mb-6">
-        <h3 className="text-lg font-medium mb-2">Your Working Hours</h3>
+        <h3 className="text-lg font-medium mb-2">{teamMember.name}'s Working Hours</h3>
         <p className="text-gray-500 text-sm">
-          Set the hours when you're generally available for meetings. These will be used as your default availability.
+          Set the hours when {teamMember.name} is generally available for meetings. These will be used as the default availability.
         </p>
       </div>
       

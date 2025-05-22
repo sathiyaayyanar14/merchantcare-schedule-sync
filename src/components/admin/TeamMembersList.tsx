@@ -9,6 +9,9 @@ import {
 } from '@/components/ui/card';
 import { TeamMember } from '@/types';
 import { useApp } from '@/context/AppContext';
+import { Button } from '@/components/ui/button';
+import { CalendarPlus, Settings, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const TeamMembersList = () => {
   const { teamMembers, bookings } = useApp();
@@ -58,6 +61,21 @@ const TeamMembersList = () => {
                     {member.upcomingBookings} <span className="text-sm text-gray-500">upcoming</span>
                   </div>
                   <div className="text-sm text-gray-500">{member.totalBookings} total bookings</div>
+                  
+                  <div className="flex space-x-2 mt-2">
+                    <Link to={`/team/availability/${member.id}`}>
+                      <Button variant="outline" size="sm">
+                        <CalendarPlus className="mr-1 h-4 w-4" />
+                        Manage Availability
+                      </Button>
+                    </Link>
+                    <Link to={`/admin/team/${member.id}`}>
+                      <Button variant="outline" size="sm">
+                        <Settings className="mr-1 h-4 w-4" />
+                        Manage Bookings
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

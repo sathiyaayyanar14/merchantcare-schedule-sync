@@ -15,6 +15,11 @@ import {
 } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { TeamMember } from '@/types';
+
+interface BlockedTimeManagerProps {
+  teamMember: TeamMember;
+}
 
 // Mock data for blocked times
 const initialBlockedTimes = [
@@ -34,7 +39,7 @@ const initialBlockedTimes = [
   },
 ];
 
-const BlockedTimeManager = () => {
+const BlockedTimeManager: React.FC<BlockedTimeManagerProps> = ({ teamMember }) => {
   const [blockedDate, setBlockedDate] = useState<Date | undefined>(new Date());
   const [startTime, setStartTime] = useState('09:00');
   const [endTime, setEndTime] = useState('10:00');
@@ -62,20 +67,20 @@ const BlockedTimeManager = () => {
     
     setBlockedTimes([...blockedTimes, newBlockedTime]);
     setReason('');
-    toast.success('Blocked time added successfully');
+    toast.success(`Blocked time added for ${teamMember.name}`);
   };
   
   const removeBlockedTime = (id: string) => {
     setBlockedTimes(blockedTimes.filter(time => time.id !== id));
-    toast.success('Blocked time removed');
+    toast.success(`Blocked time removed for ${teamMember.name}`);
   };
   
   return (
     <div>
       <div className="mb-6">
-        <h3 className="text-lg font-medium mb-2">Manage Blocked Times</h3>
+        <h3 className="text-lg font-medium mb-2">Manage {teamMember.name}'s Blocked Times</h3>
         <p className="text-gray-500 text-sm">
-          Block off specific times when you're not available for meetings.
+          Block off specific times when {teamMember.name} is not available for meetings.
         </p>
       </div>
       
@@ -120,7 +125,7 @@ const BlockedTimeManager = () => {
             <Input 
               id="reason" 
               type="text" 
-              placeholder="Why you're blocking this time" 
+              placeholder="Why this time is being blocked" 
               value={reason} 
               onChange={(e) => setReason(e.target.value)} 
             />
@@ -133,7 +138,7 @@ const BlockedTimeManager = () => {
       </div>
       
       <div className="mt-8">
-        <h4 className="font-medium mb-4">Your Blocked Times</h4>
+        <h4 className="font-medium mb-4">{teamMember.name}'s Blocked Times</h4>
         
         {blockedTimes.length > 0 ? (
           <Table>
