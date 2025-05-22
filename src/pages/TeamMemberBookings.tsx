@@ -21,10 +21,12 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Calendar } from '@/components/ui/calendar';
-import { ChevronLeft, CalendarPlus, Trash } from 'lucide-react';
+import { ChevronLeft, CalendarPlus, Trash, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { formatDate, formatTime } from '@/utils/dateUtils';
+import GoogleCalendarConnect from '@/components/google-calendar/GoogleCalendarConnect';
+import TeamMemberSchedule from '@/components/admin/TeamMemberSchedule';
 
 const TeamMemberBookings = () => {
   const { memberId } = useParams();
@@ -149,6 +151,12 @@ const TeamMemberBookingsContent = ({ memberId }: { memberId: string }) => {
                               <div>
                                 <div className="font-medium">{booking.brandName}</div>
                                 <div className="text-sm text-gray-500">Ticket: {booking.ticketId}</div>
+                                {booking.googleEventId && (
+                                  <div className="flex items-center text-xs text-merchantcare-600 mt-1">
+                                    <Check className="h-3 w-3 mr-1" />
+                                    Synced with Google
+                                  </div>
+                                )}
                               </div>
                             </TableCell>
                             <TableCell>
@@ -186,19 +194,27 @@ const TeamMemberBookingsContent = ({ memberId }: { memberId: string }) => {
                 </CardContent>
               </Card>
               
-              <Card>
-                <CardHeader>
-                  <CardTitle>Calendar</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    className="rounded-md border pointer-events-auto"
-                  />
-                </CardContent>
-              </Card>
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Calendar</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      className="rounded-md border pointer-events-auto"
+                    />
+                  </CardContent>
+                </Card>
+                
+                <GoogleCalendarConnect teamMemberId={memberId} />
+                
+                {selectedDate && (
+                  <TeamMemberSchedule date={selectedDate} memberId={memberId} />
+                )}
+              </div>
             </div>
             
             <Card className="mt-6">

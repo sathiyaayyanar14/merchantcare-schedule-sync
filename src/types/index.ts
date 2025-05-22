@@ -5,6 +5,8 @@ export type TeamMember = {
   email: string;
   role: 'admin' | 'member';
   avatar: string;
+  calendarConnected?: boolean;
+  googleCalendarId?: string;
 };
 
 export type TimeSlot = {
@@ -36,6 +38,7 @@ export type Booking = {
   status: 'scheduled' | 'rescheduled' | 'cancelled' | 'completed';
   createdAt: string;
   updatedAt: string;
+  googleEventId?: string; // Google Calendar event ID
 };
 
 export type WeeklyReport = {
@@ -52,3 +55,22 @@ export type WeeklyReport = {
     bookingsCount: number;
   }[];
 };
+
+export interface GoogleCalendarEvent {
+  id: string;
+  summary: string;
+  description?: string;
+  start: {
+    dateTime: string;
+    timeZone?: string;
+  };
+  end: {
+    dateTime: string;
+    timeZone?: string;
+  };
+  attendees?: {
+    email: string;
+    displayName?: string;
+    responseStatus?: 'needsAction' | 'declined' | 'tentative' | 'accepted';
+  }[];
+}

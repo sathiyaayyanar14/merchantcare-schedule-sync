@@ -1,7 +1,9 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { TeamMember, TimeSlot, Booking, WeeklyReport } from '../types';
-import { mockTeamMembers, generateMockTimeSlots, generateMockBookings } from '../utils/mockData';
+import { mockTeamMembers, generateMockBookings } from '../utils/mockData';
+import { format } from 'date-fns';
+import { getStandardTimeSlots, assignTimeSlotsToTeamMembers } from '../utils/dateUtils';
+import { googleCalendarService } from '../services/googleCalendarService';
 
 type AppContextType = {
   teamMembers: TeamMember[];
@@ -18,12 +20,13 @@ type AppContextType = {
   getBookingByUuid: (uuid: string) => Booking | undefined;
   getUpcomingBookings: () => Booking[];
   getPastBookings: () => Booking[];
+  updateTeamMemberCalendarStatus: (memberId: string, connected: boolean, googleCalendarId?: string) => void;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [teamMembers] = useState<TeamMember[]>(mockTeamMembers);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(mockTeamMembers);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [weeklyReports] = useState<WeeklyReport[]>([]);
@@ -31,12 +34,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Generate mock time slots for the selected date
-    const mockTimeSlots = generateMockTimeSlots(selectedDate, teamMembers);
-    setTimeSlots(mockTimeSlots);
-
-    // Generate mock bookings
-    const mockBookings = generateMockBookings(mockTimeSlots, teamMembers);
+    // Generate 16 standard time slots for the selected date and assign them to team members
+    const dateString = format(selectedDate, 'yyyy-MM-dd');
+    const standardSlots = getStandardTimeSlots();
+    const assignedSlots = assignTimeSlotsToTeamMembers(dateString, standardSlots, teamMembers);
+    
+    setTimeSlots(assignedSlots);
+    
+    // Initialize Google Calendar service
+    googleCalendarService.init();
+    
+    // Generate mock bookings based on the new slots
+    const mockBookings = generateMockBookings(assignedSlots, teamMembers);
     setBookings(mockBookings);
   }, [selectedDate, teamMembers]);
 
@@ -44,6 +53,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const timeSlot = timeSlots.find(ts => ts.id === bookingData.timeSlotId);
     if (!timeSlot) throw new Error('Time slot not found');
 
+    // Create the booking
     const newBooking: Booking = {
       id: `booking_${Date.now()}`,
       brandName: bookingData.brandName,
@@ -56,6 +66,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+
+    // Try to create Google Calendar event
+    const teamMember = teamMembers.find(m => m.id === timeSlot.memberId);
+    if (teamMember?.calendarConnected) {
+      const result = await googleCalendarService.createEvent(newBooking);
+      if (result.success) {
+        newBooking.googleEventId = result.eventId;
+      }
+    }
 
     setBookings(prev => [...prev, newBooking]);
     
@@ -72,6 +91,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const cancelBooking = async (bookingId: string): Promise<boolean> => {
     const bookingToCancel = bookings.find(b => b.id === bookingId);
     if (!bookingToCancel) return false;
+
+    // If Google Calendar integrated, delete the event
+    if (bookingToCancel.googleEventId) {
+      const teamMember = teamMembers.find(m => m.id === bookingToCancel.memberId);
+      if (teamMember?.calendarConnected) {
+        await googleCalendarService.deleteEvent(bookingToCancel.googleEventId);
+      }
+    }
 
     setBookings(prev =>
       prev.map(b =>
@@ -95,14 +122,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
     if (!bookingToReschedule || !newTimeSlot) return false;
 
+    // Update booking with new time slot
+    const updatedBooking = {
+      ...bookingToReschedule,
+      timeSlot: newTimeSlot,
+      memberId: newTimeSlot.memberId, // This might change if assigned to a different team member
+      status: 'rescheduled',
+      updatedAt: new Date().toISOString()
+    };
+
+    // If Google Calendar integrated, update the event
+    if (bookingToReschedule.googleEventId) {
+      const teamMember = teamMembers.find(m => m.id === updatedBooking.memberId);
+      if (teamMember?.calendarConnected) {
+        await googleCalendarService.updateEvent(bookingToReschedule.googleEventId, updatedBooking);
+      }
+    }
+
     setBookings(prev =>
       prev.map(b =>
-        b.id === bookingId ? { 
-          ...b, 
-          timeSlot: newTimeSlot, 
-          status: 'rescheduled', 
-          updatedAt: new Date().toISOString() 
-        } : b
+        b.id === bookingId ? updatedBooking : b
       )
     );
 
@@ -115,6 +154,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
 
     return true;
+  };
+
+  const updateTeamMemberCalendarStatus = (
+    memberId: string, 
+    connected: boolean, 
+    googleCalendarId?: string
+  ) => {
+    setTeamMembers(prev => 
+      prev.map(member => 
+        member.id === memberId 
+          ? { 
+              ...member, 
+              calendarConnected: connected,
+              googleCalendarId: connected ? googleCalendarId || member.googleCalendarId : undefined
+            } 
+          : member
+      )
+    );
   };
 
   const getBookingByUuid = (uuid: string): Booking | undefined => {
@@ -174,6 +231,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     getBookingByUuid,
     getUpcomingBookings,
     getPastBookings,
+    updateTeamMemberCalendarStatus,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

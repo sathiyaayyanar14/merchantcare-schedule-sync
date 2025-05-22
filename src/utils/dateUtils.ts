@@ -44,3 +44,51 @@ export const groupTimeSlotsByHour = (timeSlots: TimeSlot[]): Record<string, Time
   
   return grouped;
 };
+
+// Generate 16 standard 30-minute time slots from 9am to 5pm
+export const getStandardTimeSlots = () => [
+  { start: '09:00', end: '09:30' },
+  { start: '09:30', end: '10:00' },
+  { start: '10:00', end: '10:30' },
+  { start: '10:30', end: '11:00' },
+  { start: '11:00', end: '11:30' },
+  { start: '11:30', end: '12:00' },
+  { start: '13:00', end: '13:30' },
+  { start: '13:30', end: '14:00' },
+  { start: '14:00', end: '14:30' },
+  { start: '14:30', end: '15:00' },
+  { start: '15:00', end: '15:30' },
+  { start: '15:30', end: '16:00' },
+  { start: '16:00', end: '16:30' },
+  { start: '16:30', end: '17:00' },
+  { start: '17:00', end: '17:30' },
+  { start: '17:30', end: '18:00' }
+];
+
+// Assign time slots to team members based on their availability
+// Each team member gets assigned 4 slots for a balanced distribution
+export const assignTimeSlotsToTeamMembers = (date: string, timeSlots: { start: string, end: string }[], teamMembers: any[]) => {
+  if (!teamMembers.length) return [];
+  
+  const availableMembers = teamMembers.filter(member => {
+    // In a real app, we would check member's availability here
+    return true;
+  });
+  
+  if (!availableMembers.length) return [];
+  
+  return timeSlots.map((slot, index) => {
+    // Distribute slots evenly across team members
+    const memberIndex = index % availableMembers.length;
+    const assignedMember = availableMembers[memberIndex];
+    
+    return {
+      id: `slot_${date}_${slot.start}`,
+      date,
+      startTime: slot.start,
+      endTime: slot.end,
+      available: true,
+      memberId: assignedMember.id
+    };
+  });
+};
