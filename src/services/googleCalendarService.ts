@@ -1,5 +1,5 @@
 
-import { Booking } from '../types';
+import { Booking, GoogleCalendarEvent } from '../types';
 
 // Google Calendar API requires OAuth2 authentication
 // In a real app, we would implement a proper OAuth flow
@@ -7,7 +7,6 @@ import { Booking } from '../types';
 
 // Mock API key - in a real app, this would be securely stored
 const GOOGLE_API_KEY = 'DUMMY_API_KEY';
-const CALENDAR_ID = 'primary';
 
 export const googleCalendarService = {
   // Initialize the Google Calendar API client
@@ -18,25 +17,55 @@ export const googleCalendarService = {
   },
   
   // Create a new event in Google Calendar
-  createEvent: async (booking: Booking) => {
+  createEvent: async (booking: Booking): Promise<{ success: boolean; eventId: string; error: null | string }> => {
     console.log('Creating Google Calendar event for booking:', booking.id);
     
-    // In a real app, we would make an API call to Google Calendar
-    // For now, we'll simulate a successful response with an event ID
-    const eventId = `google_event_${Date.now()}`;
+    // In a real app, we would convert the booking to a Google Calendar event format
+    // and make an API call to Google Calendar
+    const event: GoogleCalendarEvent = {
+      id: `google_event_${Date.now()}`,
+      summary: `MerchantCare Call: ${booking.brandName} (${booking.ticketId})`,
+      description: booking.description || 'No description provided',
+      start: {
+        dateTime: new Date(`${booking.timeSlot.date}T${booking.timeSlot.startTime}`).toISOString(),
+        timeZone: 'UTC'
+      },
+      end: {
+        dateTime: new Date(`${booking.timeSlot.date}T${booking.timeSlot.endTime}`).toISOString(),
+        timeZone: 'UTC'
+      },
+      attendees: booking.additionalGuests.map(email => ({ email }))
+    };
     
+    // For now, we'll simulate a successful response with an event ID
     return {
       success: true,
-      eventId,
+      eventId: event.id,
       error: null
     };
   },
   
   // Update an existing event in Google Calendar
-  updateEvent: async (eventId: string, booking: Booking) => {
+  updateEvent: async (eventId: string, booking: Booking): Promise<{ success: boolean; error: null | string }> => {
     console.log('Updating Google Calendar event:', eventId);
     
-    // In a real app, we would make an API call to Google Calendar
+    // In a real app, we would convert the booking to a Google Calendar event format
+    // and make an API call to Google Calendar to update the event
+    const event: GoogleCalendarEvent = {
+      id: eventId,
+      summary: `MerchantCare Call: ${booking.brandName} (${booking.ticketId})`,
+      description: booking.description || 'No description provided',
+      start: {
+        dateTime: new Date(`${booking.timeSlot.date}T${booking.timeSlot.startTime}`).toISOString(),
+        timeZone: 'UTC'
+      },
+      end: {
+        dateTime: new Date(`${booking.timeSlot.date}T${booking.timeSlot.endTime}`).toISOString(),
+        timeZone: 'UTC'
+      },
+      attendees: booking.additionalGuests.map(email => ({ email }))
+    };
+    
     return {
       success: true,
       error: null
@@ -44,10 +73,10 @@ export const googleCalendarService = {
   },
   
   // Delete an event from Google Calendar
-  deleteEvent: async (eventId: string) => {
+  deleteEvent: async (eventId: string): Promise<{ success: boolean; error: null | string }> => {
     console.log('Deleting Google Calendar event:', eventId);
     
-    // In a real app, we would make an API call to Google Calendar
+    // In a real app, we would make an API call to Google Calendar to delete the event
     return {
       success: true,
       error: null
@@ -66,5 +95,12 @@ export const googleCalendarService = {
       eventId,
       bookingId
     };
+  },
+  
+  // Handle Google Calendar webhook events
+  handleWebhookEvent: async (eventData: any): Promise<void> => {
+    // In a real app, this would process an incoming webhook from Google Calendar
+    // and update the corresponding booking in our system
+    console.log('Processing Google Calendar webhook event:', eventData);
   }
 };

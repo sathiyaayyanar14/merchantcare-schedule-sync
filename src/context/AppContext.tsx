@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { TeamMember, TimeSlot, Booking, WeeklyReport } from '../types';
 import { mockTeamMembers, generateMockBookings } from '../utils/mockData';
@@ -123,11 +124,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!bookingToReschedule || !newTimeSlot) return false;
 
     // Update booking with new time slot
-    const updatedBooking = {
+    const updatedBooking: Booking = {
       ...bookingToReschedule,
       timeSlot: newTimeSlot,
       memberId: newTimeSlot.memberId, // This might change if assigned to a different team member
-      status: 'rescheduled',
+      status: 'rescheduled' as const,
       updatedAt: new Date().toISOString()
     };
 
