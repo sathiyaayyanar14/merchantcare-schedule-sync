@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Confirmation from "./pages/Confirmation";
 import ManageBookingPage from "./pages/ManageBookingPage";
 import Admin from "./pages/Admin";
+import TeamAvailability from "./pages/TeamAvailability";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/confirmation/:bookingId" element={<Confirmation />} />
           <Route path="/manage/:bookingId" element={<ManageBookingPage />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/team/availability" element={<TeamAvailability />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
