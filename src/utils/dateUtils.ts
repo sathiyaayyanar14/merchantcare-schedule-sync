@@ -94,3 +94,39 @@ export const assignTimeSlotsToTeamMembers = (date: string, timeSlots: { start: s
     };
   });
 };
+
+// New function to apply time slot template across multiple days
+export const applyTimeSlotTemplateToMultipleDays = (
+  sourceDate: Date,
+  targetDates: Date[],
+  timeSlots: TimeSlot[],
+  teamMembers: TeamMember[]
+): TimeSlot[] => {
+  const sourceDateStr = format(sourceDate, 'yyyy-MM-dd');
+  const sourceSlots = timeSlots.filter(slot => slot.date === sourceDateStr);
+  
+  if (sourceSlots.length === 0) return [];
+  
+  const newTimeSlots: TimeSlot[] = [];
+  
+  targetDates.forEach(targetDate => {
+    const targetDateStr = format(targetDate, 'yyyy-MM-dd');
+    
+    // Skip the source date if it's in the target dates
+    if (targetDateStr === sourceDateStr) return;
+    
+    const standardSlots = getStandardTimeSlots();
+    const newSlots = assignTimeSlotsToTeamMembers(targetDateStr, standardSlots, teamMembers);
+    
+    // Copy availability status from source slots to target slots
+    newSlots.forEach((newSlot, index) => {
+      if (index < sourceSlots.length) {
+        newSlot.available = sourceSlots[index].available;
+      }
+    });
+    
+    newTimeSlots.push(...newSlots);
+  });
+  
+  return newTimeSlots;
+};

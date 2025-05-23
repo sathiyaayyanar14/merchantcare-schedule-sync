@@ -22,6 +22,7 @@ type AppContextType = {
   getUpcomingBookings: () => Booking[];
   getPastBookings: () => Booking[];
   updateTeamMemberCalendarStatus: (memberId: string, connected: boolean, googleCalendarId?: string) => void;
+  setTimeSlots: React.Dispatch<React.SetStateAction<TimeSlot[]>>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -40,14 +41,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const standardSlots = getStandardTimeSlots();
     const assignedSlots = assignTimeSlotsToTeamMembers(dateString, standardSlots, teamMembers);
     
-    setTimeSlots(assignedSlots);
+    // Check if we already have slots for this date
+    const existingSlotsForDate = timeSlots.filter(slot => slot.date === dateString);
+    
+    if (existingSlotsForDate.length === 0) {
+      setTimeSlots(prev => [...prev, ...assignedSlots]);
+    }
     
     // Initialize Google Calendar service
     googleCalendarService.init();
     
-    // Generate mock bookings based on the new slots
-    const mockBookings = generateMockBookings(assignedSlots, teamMembers);
-    setBookings(mockBookings);
+    // Generate mock bookings based on the new slots if none exist
+    if (bookings.length === 0) {
+      const mockBookings = generateMockBookings(assignedSlots, teamMembers);
+      setBookings(mockBookings);
+    }
   }, [selectedDate, teamMembers]);
 
   const createBooking = async (bookingData: any): Promise<Booking> => {
@@ -233,6 +241,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     getUpcomingBookings,
     getPastBookings,
     updateTeamMemberCalendarStatus,
+    setTimeSlots,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

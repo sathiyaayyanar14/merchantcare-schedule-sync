@@ -102,5 +102,36 @@ export const googleCalendarService = {
     // In a real app, this would process an incoming webhook from Google Calendar
     // and update the corresponding booking in our system
     console.log('Processing Google Calendar webhook event:', eventData);
+  },
+  
+  // Set up a webhook for two-way sync
+  setupTwoWaySync: async (teamMemberId: string, googleCalendarId: string): Promise<boolean> => {
+    console.log(`Setting up two-way sync for team member ${teamMemberId} with Google Calendar ${googleCalendarId}`);
+    
+    // In a real app, this would register a webhook with Google Calendar
+    // to receive notifications when events are modified
+    return true;
+  },
+  
+  // Process an event change from Google Calendar
+  processExternalCalendarChange: async (
+    eventId: string, 
+    changeType: 'created' | 'updated' | 'deleted',
+    eventDetails?: GoogleCalendarEvent
+  ): Promise<{
+    success: boolean;
+    message: string;
+    affectedBookingId?: string;
+  }> => {
+    console.log(`Processing external calendar change: ${changeType} for event ${eventId}`);
+    
+    // In a real app, we would look up the booking associated with this event
+    // and update it accordingly
+    
+    return {
+      success: true,
+      message: `Successfully processed ${changeType} event from Google Calendar`,
+      affectedBookingId: 'booking_123' // This would be the actual booking ID
+    };
   }
 };
