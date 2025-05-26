@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +39,15 @@ const BookingForm = ({ onComplete }: BookingFormProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const selectedTimeSlot = timeSlots.find(slot => slot.id === selectedTimeSlotId);
+
+  // Update form data when selectedTimeSlotId changes
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      timeSlotId: selectedTimeSlotId || '',
+      date: formatDate(selectedDate, 'yyyy-MM-dd'),
+    }));
+  }, [selectedTimeSlotId, selectedDate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -86,7 +95,7 @@ const BookingForm = ({ onComplete }: BookingFormProps) => {
       
       toast.success('Booking created successfully!');
       
-      // Navigate to the confirmation page
+      // Navigate to the confirmation page with the booking ID
       navigate(`/confirmation/${booking.id}`);
       
       if (onComplete) {

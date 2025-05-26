@@ -18,7 +18,6 @@ type AppContextType = {
   createBooking: (bookingData: any) => Promise<Booking>;
   cancelBooking: (bookingId: string) => Promise<boolean>;
   rescheduleBooking: (bookingId: string, newTimeSlotId: string) => Promise<boolean>;
-  getBookingByUuid: (uuid: string) => Booking | undefined;
   getUpcomingBookings: () => Booking[];
   getPastBookings: () => Booking[];
   updateTeamMemberCalendarStatus: (memberId: string, connected: boolean, googleCalendarId?: string) => void;
@@ -64,7 +63,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Create the booking
     const newBooking: Booking = {
-      id: `booking_${Date.now()}`,
+      id: `booking_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       brandName: bookingData.brandName,
       ticketId: bookingData.ticketId,
       description: bookingData.description,
@@ -76,6 +75,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       updatedAt: new Date().toISOString(),
     };
 
+    console.log('Creating new booking:', newBooking);
+
     // Try to create Google Calendar event
     const teamMember = teamMembers.find(m => m.id === timeSlot.memberId);
     if (teamMember?.calendarConnected) {
@@ -85,7 +86,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    setBookings(prev => [...prev, newBooking]);
+    setBookings(prev => {
+      const updated = [...prev, newBooking];
+      console.log('Updated bookings array:', updated);
+      return updated;
+    });
     
     // Update the time slot availability
     setTimeSlots(prev =>
@@ -135,7 +140,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const updatedBooking: Booking = {
       ...bookingToReschedule,
       timeSlot: newTimeSlot,
-      memberId: newTimeSlot.memberId, // This might change if assigned to a different team member
+      memberId: newTimeSlot.memberId,
       status: 'rescheduled' as const,
       updatedAt: new Date().toISOString()
     };
@@ -181,10 +186,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           : member
       )
     );
-  };
-
-  const getBookingByUuid = (uuid: string): Booking | undefined => {
-    return bookings.find(b => b.id === uuid);
   };
 
   const getUpcomingBookings = (): Booking[] => {
@@ -237,7 +238,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     createBooking,
     cancelBooking,
     rescheduleBooking,
-    getBookingByUuid,
     getUpcomingBookings,
     getPastBookings,
     updateTeamMemberCalendarStatus,

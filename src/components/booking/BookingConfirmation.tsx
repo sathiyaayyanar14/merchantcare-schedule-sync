@@ -16,10 +16,15 @@ import { Check } from 'lucide-react';
 
 const BookingConfirmation = () => {
   const { bookingId } = useParams();
-  const { getBookingByUuid } = useApp();
+  const { bookings, teamMembers } = useApp();
   const navigate = useNavigate();
   
-  const booking = bookingId ? getBookingByUuid(bookingId) : undefined;
+  // Find booking by ID from the bookings array
+  const booking = bookings.find(b => b.id === bookingId);
+  
+  console.log('Looking for booking with ID:', bookingId);
+  console.log('Available bookings:', bookings);
+  console.log('Found booking:', booking);
   
   if (!booking) {
     return (
@@ -38,6 +43,8 @@ const BookingConfirmation = () => {
       </div>
     );
   }
+
+  const teamMember = teamMembers.find(m => m.id === booking.memberId);
 
   const handleManageBooking = () => {
     navigate(`/manage/${booking.id}`);
@@ -66,6 +73,11 @@ const BookingConfirmation = () => {
             <p className="text-gray-700">
               <span className="font-medium">Time:</span> {formatTime(booking.timeSlot.startTime)} - {formatTime(booking.timeSlot.endTime)}
             </p>
+            {teamMember && (
+              <p className="text-gray-700">
+                <span className="font-medium">Team Member:</span> {teamMember.name}
+              </p>
+            )}
           </div>
           
           <div className="border-b pb-4">
