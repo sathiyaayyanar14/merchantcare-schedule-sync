@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { TeamMember, TimeSlot, Booking, WeeklyReport } from '../types';
 import { mockTeamMembers, generateMockBookings } from '../utils/mockData';
@@ -18,6 +17,7 @@ type AppContextType = {
   createBooking: (bookingData: any) => Promise<Booking>;
   cancelBooking: (bookingId: string) => Promise<boolean>;
   rescheduleBooking: (bookingId: string, newTimeSlotId: string) => Promise<boolean>;
+  getBookingByUuid: (bookingId: string) => Booking | undefined;
   getUpcomingBookings: () => Booking[];
   getPastBookings: () => Booking[];
   updateTeamMemberCalendarStatus: (memberId: string, connected: boolean, googleCalendarId?: string) => void;
@@ -100,6 +100,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
 
     return newBooking;
+  };
+
+  const getBookingByUuid = (bookingId: string): Booking | undefined => {
+    return bookings.find(booking => booking.id === bookingId);
   };
 
   const cancelBooking = async (bookingId: string): Promise<boolean> => {
@@ -238,6 +242,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     createBooking,
     cancelBooking,
     rescheduleBooking,
+    getBookingByUuid,
     getUpcomingBookings,
     getPastBookings,
     updateTeamMemberCalendarStatus,
