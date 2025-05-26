@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Container } from '@/components/ui/container';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -11,6 +12,16 @@ import ApplyTimeSlots from '@/components/calendar/ApplyTimeSlots';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Index = () => {
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'schedule') {
+      setActiveTab('schedule');
+    }
+  }, [searchParams]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -22,10 +33,10 @@ const Index = () => {
               View upcoming calls, team availability, and schedule new appointments.
             </p>
             
-            <Tabs defaultValue="dashboard" className="mb-8">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
               <TabsList className="mb-4 w-full sm:w-auto">
-                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                <TabsTrigger value="schedule">Schedule a Call</TabsTrigger>
+                <TabsTrigger value="dashboard" data-value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="schedule" data-value="schedule">Schedule a Call</TabsTrigger>
               </TabsList>
               
               <TabsContent value="dashboard">

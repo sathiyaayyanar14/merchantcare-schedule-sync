@@ -45,16 +45,22 @@ const CalendarView = () => {
       <div className="grid grid-cols-7 gap-1 mb-6">
         {weekDays.map((day, index) => {
           const isSelected = format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
+          const today = new Date();
+          const isPast = day < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          
+          // Check if day has slots or if it's a future date (we can generate slots for future dates)
           const dayHasSlots = timeSlots.some(slot => 
             slot.date === format(day, 'yyyy-MM-dd') && slot.available
-          );
+          ) || !isPast;
           
           return (
             <Button
               key={index}
               variant={isSelected ? "default" : "outline"}
-              className={`flex flex-col items-center justify-center h-20 ${!dayHasSlots ? 'opacity-50' : ''}`}
-              disabled={!dayHasSlots}
+              className={`flex flex-col items-center justify-center h-20 ${
+                isPast ? 'opacity-50' : ''
+              } ${isSelected ? 'bg-merchantcare-600 hover:bg-merchantcare-700' : ''}`}
+              disabled={isPast}
               onClick={() => handleDayClick(day)}
             >
               <span className="text-xs">{format(day, 'EEE')}</span>

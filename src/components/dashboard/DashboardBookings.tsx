@@ -10,9 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 const DashboardBookings = () => {
   const { bookings, teamMembers } = useApp();
   
+  console.log('All bookings in dashboard:', bookings);
+  
   // Get current date for comparison
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
   // Filter upcoming bookings (future bookings that are not cancelled)
   const upcomingBookings = bookings.filter(booking => {
@@ -27,7 +28,9 @@ const DashboardBookings = () => {
       parseInt(bookingTimeParts[1])
     );
     
-    return bookingDateTime >= now && booking.status !== 'cancelled';
+    const isUpcoming = bookingDateTime >= now && booking.status !== 'cancelled';
+    console.log(`Booking ${booking.id}: ${bookingDateTime} >= ${now} = ${isUpcoming}, status: ${booking.status}`);
+    return isUpcoming;
   });
   
   // Filter past bookings - show last 5 completed/cancelled calls from all team members
@@ -44,7 +47,9 @@ const DashboardBookings = () => {
         parseInt(bookingTimeParts[1])
       );
       
-      return bookingDateTime < now || booking.status === 'cancelled' || booking.status === 'completed';
+      const isPast = bookingDateTime < now || booking.status === 'cancelled' || booking.status === 'completed';
+      console.log(`Past booking ${booking.id}: ${bookingDateTime} < ${now} = ${isPast}, status: ${booking.status}`);
+      return isPast;
     })
     .sort((a, b) => {
       // Sort by date and time, most recent first
@@ -53,6 +58,9 @@ const DashboardBookings = () => {
       return dateB.getTime() - dateA.getTime();
     })
     .slice(0, 5); // Show only last 5
+  
+  console.log('Upcoming bookings:', upcomingBookings);
+  console.log('Past bookings:', pastBookings);
   
   const getMemberName = (memberId: string) => {
     const member = teamMembers.find(m => m.id === memberId);
@@ -67,6 +75,8 @@ const DashboardBookings = () => {
         return 'destructive';
       case 'rescheduled':
         return 'secondary';
+      case 'scheduled':
+        return 'outline';
       default:
         return 'outline';
     }

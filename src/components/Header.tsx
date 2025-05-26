@@ -1,12 +1,26 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
+
+  const handleBookCallClick = () => {
+    if (location.pathname === '/') {
+      // If we're on the home page, scroll to the Schedule tab and activate it
+      const tabsTrigger = document.querySelector('[data-value="schedule"]') as HTMLElement;
+      if (tabsTrigger) {
+        tabsTrigger.click();
+      }
+    } else {
+      // If we're on another page, navigate to home with schedule tab
+      navigate('/?tab=schedule');
+    }
+  };
 
   return (
     <header className="w-full bg-white border-b border-gray-200">
@@ -30,7 +44,7 @@ const Header = () => {
             Admin Dashboard
           </Button>
           <Button
-            onClick={() => navigate('/')}
+            onClick={handleBookCallClick}
             size="sm"
             className="bg-merchantcare-600 hover:bg-merchantcare-700"
           >
