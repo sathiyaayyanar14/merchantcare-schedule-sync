@@ -17,8 +17,12 @@ const AdminDashboard = () => {
   const { bookings, teamMembers, getUpcomingBookings, getPastBookings } = useApp();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   
-  const upcomingBookings = getUpcomingBookings();
-  const pastBookings = getPastBookings();
+  // Use selected date or current date as reference
+  const referenceDate = selectedDate || new Date();
+  
+  // Get bookings based on selected date
+  const upcomingBookings = getUpcomingBookings(referenceDate).slice(0, 10); // Show up to 10
+  const pastBookings = getPastBookings(referenceDate).slice(0, 10); // Show up to 10
   
   const generateReport = () => {
     toast.success('Weekly report generated and exported to Google Sheets');
@@ -55,6 +59,14 @@ const AdminDashboard = () => {
           Export Weekly Report
         </Button>
       </div>
+      
+      {selectedDate && (
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+          <p className="text-blue-800 text-sm">
+            Showing bookings from <strong>{formatDate(referenceDate)}</strong> onwards
+          </p>
+        </div>
+      )}
       
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
@@ -110,12 +122,12 @@ const AdminDashboard = () => {
           <CardContent>
             <Tabs defaultValue="upcoming">
               <TabsList className="mb-4">
-                <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-                <TabsTrigger value="past">Past</TabsTrigger>
+                <TabsTrigger value="upcoming">Upcoming ({upcomingBookings.length})</TabsTrigger>
+                <TabsTrigger value="past">Past ({pastBookings.length})</TabsTrigger>
               </TabsList>
               
               <TabsContent value="upcoming">
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-96 overflow-y-auto">
                   {upcomingBookings.length > 0 ? (
                     upcomingBookings.map(booking => (
                       <div 
@@ -139,14 +151,14 @@ const AdminDashboard = () => {
                     ))
                   ) : (
                     <p className="text-center text-gray-500 py-6">
-                      No upcoming bookings found
+                      No upcoming bookings found from {formatDate(referenceDate)}
                     </p>
                   )}
                 </div>
               </TabsContent>
               
               <TabsContent value="past">
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-96 overflow-y-auto">
                   {pastBookings.length > 0 ? (
                     pastBookings.map(booking => (
                       <div 
@@ -177,7 +189,7 @@ const AdminDashboard = () => {
                     ))
                   ) : (
                     <p className="text-center text-gray-500 py-6">
-                      No past bookings found
+                      No past bookings found before {formatDate(referenceDate)}
                     </p>
                   )}
                 </div>
@@ -188,7 +200,7 @@ const AdminDashboard = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Calendar</CardTitle>
+            <CardTitle>Select Reference Date</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex justify-center mb-4">

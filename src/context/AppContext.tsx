@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { TeamMember, TimeSlot, Booking, WeeklyReport } from '../types';
 import { mockTeamMembers, generateMockBookings } from '../utils/mockData';
-import { format } from 'date-fns';
+import { format, addDays, subDays } from 'date-fns';
 import { getStandardTimeSlots, assignTimeSlotsToTeamMembers } from '../utils/dateUtils';
 import { googleCalendarService } from '../services/googleCalendarService';
 
@@ -18,8 +18,8 @@ type AppContextType = {
   cancelBooking: (bookingId: string) => Promise<boolean>;
   rescheduleBooking: (bookingId: string, newTimeSlotId: string) => Promise<boolean>;
   getBookingByUuid: (bookingId: string) => Booking | undefined;
-  getUpcomingBookings: () => Booking[];
-  getPastBookings: () => Booking[];
+  getUpcomingBookings: (fromDate?: Date) => Booking[];
+  getPastBookings: (toDate?: Date) => Booking[];
   updateTeamMemberCalendarStatus: (memberId: string, connected: boolean, googleCalendarId?: string) => void;
   setTimeSlots: React.Dispatch<React.SetStateAction<TimeSlot[]>>;
 };
@@ -35,27 +35,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Generate 16 standard time slots for the selected date and assign them to team members
-    const dateString = format(selectedDate, 'yyyy-MM-dd');
-    const standardSlots = getStandardTimeSlots();
-    const assignedSlots = assignTimeSlotsToTeamMembers(dateString, standardSlots, teamMembers);
+    // Generate time slots for multiple days (past and future)
+    const today = new Date();
+    const allSlots: TimeSlot[] = [];
     
-    // Check if we already have slots for this date
-    const existingSlotsForDate = timeSlots.filter(slot => slot.date === dateString);
-    
-    if (existingSlotsForDate.length === 0) {
-      setTimeSlots(prev => [...prev, ...assignedSlots]);
+    // Generate slots for 30 days in the past and 30 days in the future
+    for (let i = -30; i <= 30; i++) {
+      const targetDate = addDays(today, i);
+      const dateString = format(targetDate, 'yyyy-MM-dd');
+      const standardSlots = getStandardTimeSlots();
+      const assignedSlots = assignTimeSlotsToTeamMembers(dateString, standardSlots, teamMembers);
+      allSlots.push(...assignedSlots);
     }
+    
+    setTimeSlots(allSlots);
     
     // Initialize Google Calendar service
     googleCalendarService.init();
     
-    // Generate mock bookings based on the new slots if none exist
+    // Generate comprehensive mock bookings
     if (bookings.length === 0) {
-      const mockBookings = generateMockBookings(assignedSlots, teamMembers);
+      const mockBookings = generateMockBookings(allSlots, teamMembers);
+      console.log('Generated mock bookings:', mockBookings.length);
       setBookings(mockBookings);
     }
-  }, [selectedDate, teamMembers]);
+  }, [teamMembers]);
 
   const createBooking = async (bookingData: any): Promise<Booking> => {
     const timeSlot = timeSlots.find(ts => ts.id === bookingData.timeSlotId);
@@ -192,8 +196,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const getUpcomingBookings = (): Booking[] => {
-    const now = new Date();
+  const getUpcomingBookings = (fromDate?: Date): Booking[] => {
+    const referenceDate = fromDate || new Date();
     return bookings.filter(booking => {
       // Convert the booking date and time to a Date object
       const bookingDateParts = booking.timeSlot.date.split('-');
@@ -207,12 +211,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         parseInt(bookingTimeParts[1])
       );
       
-      return bookingDate > now && booking.status !== 'cancelled';
+      return bookingDate >= referenceDate && booking.status !== 'cancelled';
+    }).sort((a, b) => {
+      const dateA = new Date(`${a.timeSlot.date}T${a.timeSlot.startTime}`);
+      const dateB = new Date(`${b.timeSlot.date}T${b.timeSlot.startTime}`);
+      return dateA.getTime() - dateB.getTime();
     });
   };
 
-  const getPastBookings = (): Booking[] => {
-    const now = new Date();
+  const getPastBookings = (toDate?: Date): Booking[] => {
+    const referenceDate = toDate || new Date();
     return bookings.filter(booking => {
       // Convert the booking date and time to a Date object
       const bookingDateParts = booking.timeSlot.date.split('-');
@@ -226,7 +234,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         parseInt(bookingTimeParts[1])
       );
       
-      return bookingDate <= now || booking.status === 'cancelled';
+      return bookingDate < referenceDate || booking.status === 'cancelled' || booking.status === 'completed';
+    }).sort((a, b) => {
+      const dateA = new Date(`${a.timeSlot.date}T${a.timeSlot.startTime}`);
+      const dateB = new Date(`${b.timeSlot.date}T${b.timeSlot.startTime}`);
+      return dateB.getTime() - dateA.getTime();
     });
   };
 
