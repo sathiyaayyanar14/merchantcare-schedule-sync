@@ -47,11 +47,11 @@ const BookingConfirmation = () => {
   const teamMember = teamMembers.find(m => m.id === booking.memberId);
 
   const handleManageBooking = () => {
-    navigate(`/manage/${booking.id}`);
+    navigate(`/manage/${bookingId}`);
   };
 
   const handleNewBooking = () => {
-    navigate('/');
+    navigate('/?tab=schedule');
   };
 
   return (

@@ -53,13 +53,79 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Initialize Google Calendar service
     googleCalendarService.init();
     
-    // Generate comprehensive mock bookings
+    // Generate comprehensive mock bookings with various statuses
     if (bookings.length === 0) {
       const mockBookings = generateMockBookings(allSlots, teamMembers);
-      console.log('Generated mock bookings:', mockBookings.length);
-      setBookings(mockBookings);
+      
+      // Add some additional bookings with different statuses for demo
+      const additionalBookings: Booking[] = [
+        {
+          id: 'booking_completed_1',
+          brandName: 'TechCorp Solutions',
+          ticketId: 'TC-2024-001',
+          description: 'Integration support for payment gateway',
+          additionalGuests: ['dev@techcorp.com'],
+          timeSlot: allSlots.find(s => s.date === format(subDays(today, 2), 'yyyy-MM-dd')) || allSlots[0],
+          memberId: 'member_1',
+          status: 'completed',
+          createdAt: subDays(today, 3).toISOString(),
+          updatedAt: subDays(today, 2).toISOString(),
+        },
+        {
+          id: 'booking_cancelled_1',
+          brandName: 'StartupCo',
+          ticketId: 'SC-2024-002',
+          description: 'Account setup consultation',
+          additionalGuests: [],
+          timeSlot: allSlots.find(s => s.date === format(subDays(today, 1), 'yyyy-MM-dd')) || allSlots[1],
+          memberId: 'member_2',
+          status: 'cancelled',
+          createdAt: subDays(today, 4).toISOString(),
+          updatedAt: subDays(today, 1).toISOString(),
+        },
+        {
+          id: 'booking_rescheduled_1',
+          brandName: 'Enterprise Ltd',
+          ticketId: 'EL-2024-003',
+          description: 'API documentation review',
+          additionalGuests: ['tech@enterprise.com', 'manager@enterprise.com'],
+          timeSlot: allSlots.find(s => s.date === format(addDays(today, 1), 'yyyy-MM-dd')) || allSlots[2],
+          memberId: 'member_1',
+          status: 'rescheduled',
+          createdAt: subDays(today, 5).toISOString(),
+          updatedAt: today.toISOString(),
+        },
+        {
+          id: 'booking_upcoming_1',
+          brandName: 'GlobalTech Inc',
+          ticketId: 'GT-2024-004',
+          description: 'Webhook configuration assistance',
+          additionalGuests: [],
+          timeSlot: allSlots.find(s => s.date === format(addDays(today, 3), 'yyyy-MM-dd')) || allSlots[3],
+          memberId: 'member_3',
+          status: 'scheduled',
+          createdAt: today.toISOString(),
+          updatedAt: today.toISOString(),
+        },
+        {
+          id: 'booking_upcoming_2',
+          brandName: 'Retail Solutions',
+          ticketId: 'RS-2024-005',
+          description: 'Multi-store setup guidance',
+          additionalGuests: ['support@retail.com'],
+          timeSlot: allSlots.find(s => s.date === format(addDays(today, 5), 'yyyy-MM-dd')) || allSlots[4],
+          memberId: 'member_2',
+          status: 'scheduled',
+          createdAt: today.toISOString(),
+          updatedAt: today.toISOString(),
+        }
+      ];
+      
+      const allMockBookings = [...mockBookings, ...additionalBookings];
+      console.log('Generated mock bookings:', allMockBookings.length);
+      setBookings(allMockBookings);
     }
-  }, [teamMembers]);
+  }, [teamMembers, bookings.length]);
 
   const createBooking = async (bookingData: any): Promise<Booking> => {
     const timeSlot = timeSlots.find(ts => ts.id === bookingData.timeSlotId);

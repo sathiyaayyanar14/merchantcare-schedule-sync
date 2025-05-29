@@ -12,20 +12,31 @@ import { useApp } from '@/context/AppContext';
 import { formatDate, formatTime } from '@/utils/dateUtils';
 import { Calendar } from '@/components/ui/calendar';
 import { toast } from 'sonner';
+import { CalendarPlus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const { bookings, teamMembers, getUpcomingBookings, getPastBookings } = useApp();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const navigate = useNavigate();
   
   // Use selected date or current date as reference
   const referenceDate = selectedDate || new Date();
   
-  // Get bookings based on selected date
-  const upcomingBookings = getUpcomingBookings(referenceDate).slice(0, 10); // Show up to 10
-  const pastBookings = getPastBookings(referenceDate).slice(0, 10); // Show up to 10
+  // Get all bookings for statistics
+  const allUpcomingBookings = getUpcomingBookings(referenceDate);
+  const allPastBookings = getPastBookings(referenceDate);
+  
+  // Show limited bookings for display (3-5 max)
+  const displayUpcomingBookings = allUpcomingBookings.slice(0, 5);
+  const displayPastBookings = allPastBookings.slice(0, 5);
   
   const generateReport = () => {
     toast.success('Weekly report generated and exported to Google Sheets');
+  };
+  
+  const handleBookCall = () => {
+    navigate('/?tab=schedule');
   };
   
   const getMemberName = (memberId: string) => {
@@ -33,10 +44,10 @@ const AdminDashboard = () => {
     return member ? member.name : 'Unknown Member';
   };
   
-  // Simple stats
-  const totalUpcoming = upcomingBookings.length;
-  const totalCompleted = pastBookings.filter(b => b.status === 'completed').length;
-  const totalCancelled = pastBookings.filter(b => b.status === 'cancelled').length;
+  // Enhanced stats calculations
+  const totalUpcoming = allUpcomingBookings.length;
+  const totalCompleted = allPastBookings.filter(b => b.status === 'completed').length;
+  const totalCancelled = allPastBookings.filter(b => b.status === 'cancelled').length;
   const totalRescheduled = bookings.filter(b => b.status === 'rescheduled').length;
   
   // Member stats
@@ -52,12 +63,21 @@ const AdminDashboard = () => {
           <h1 className="text-2xl font-bold">Admin Dashboard</h1>
           <p className="text-gray-500">Manage team calendar and bookings</p>
         </div>
-        <Button 
-          onClick={generateReport}
-          className="bg-merchantcare-600 hover:bg-merchantcare-700"
-        >
-          Export Weekly Report
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleBookCall}
+            className="bg-merchantcare-600 hover:bg-merchantcare-700"
+          >
+            <CalendarPlus className="mr-1 h-4 w-4" />
+            Book a Call
+          </Button>
+          <Button 
+            onClick={generateReport}
+            variant="outline"
+          >
+            Export Weekly Report
+          </Button>
+        </div>
       </div>
       
       {selectedDate && (
@@ -122,17 +142,17 @@ const AdminDashboard = () => {
           <CardContent>
             <Tabs defaultValue="upcoming">
               <TabsList className="mb-4">
-                <TabsTrigger value="upcoming">Upcoming ({upcomingBookings.length})</TabsTrigger>
-                <TabsTrigger value="past">Past ({pastBookings.length})</TabsTrigger>
+                <TabsTrigger value="upcoming">Upcoming ({displayUpcomingBookings.length})</TabsTrigger>
+                <TabsTrigger value="past">Past ({displayPastBookings.length})</TabsTrigger>
               </TabsList>
               
               <TabsContent value="upcoming">
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {upcomingBookings.length > 0 ? (
-                    upcomingBookings.map(booking => (
+                  {displayUpcomingBookings.length > 0 ? (
+                    displayUpcomingBookings.map(booking => (
                       <div 
                         key={booking.id} 
-                        className="event-card upcoming"
+                        className="event-card upcoming border rounded-md p-4 bg-white shadow-sm"
                       >
                         <div className="flex justify-between">
                           <h3 className="font-medium">{booking.brandName}</h3>
@@ -150,22 +170,22 @@ const AdminDashboard = () => {
                       </div>
                     ))
                   ) : (
-                    <p className="text-center text-gray-500 py-6">
+                    <div className="text-center py-8 text-gray-500 border rounded-md">
                       No upcoming bookings found from {formatDate(referenceDate)}
-                    </p>
+                    </div>
                   )}
                 </div>
               </TabsContent>
               
               <TabsContent value="past">
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {pastBookings.length > 0 ? (
-                    pastBookings.map(booking => (
+                  {displayPastBookings.length > 0 ? (
+                    displayPastBookings.map(booking => (
                       <div 
                         key={booking.id} 
-                        className={`event-card ${
-                          booking.status === 'completed' ? 'completed' : 
-                          booking.status === 'cancelled' ? 'cancelled' : ''
+                        className={`event-card border rounded-md p-4 shadow-sm ${
+                          booking.status === 'completed' ? 'bg-green-50' : 
+                          booking.status === 'cancelled' ? 'bg-gray-50' : 'bg-blue-50'
                         }`}
                       >
                         <div className="flex justify-between">
@@ -188,9 +208,9 @@ const AdminDashboard = () => {
                       </div>
                     ))
                   ) : (
-                    <p className="text-center text-gray-500 py-6">
+                    <div className="text-center py-8 text-gray-500 border rounded-md">
                       No past bookings found before {formatDate(referenceDate)}
-                    </p>
+                    </div>
                   )}
                 </div>
               </TabsContent>
