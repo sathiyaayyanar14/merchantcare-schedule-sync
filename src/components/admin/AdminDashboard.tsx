@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Card, 
@@ -56,31 +55,9 @@ const AdminDashboard = () => {
     return { member, count };
   }).sort((a, b) => b.count - a.count);
 
-  // Handle stat card clicks
+  // Handle stat card clicks - navigate to bookings list with status filter
   const handleStatClick = (status: string) => {
-    let filteredBookings: any[] = [];
-    
-    switch (status) {
-      case 'upcoming':
-        filteredBookings = allUpcomingBookings;
-        break;
-      case 'completed':
-        filteredBookings = allPastBookings.filter(b => b.status === 'completed');
-        break;
-      case 'cancelled':
-        filteredBookings = allPastBookings.filter(b => b.status === 'cancelled');
-        break;
-      case 'rescheduled':
-        filteredBookings = bookings.filter(b => b.status === 'rescheduled');
-        break;
-    }
-    
-    if (filteredBookings.length > 0) {
-      // Navigate to the first booking's details
-      navigate(`/admin/booking/${filteredBookings[0].id}`);
-    } else {
-      toast.info(`No ${status} bookings found`);
-    }
+    navigate(`/admin/bookings?status=${status}`);
   };
   
   return (
@@ -127,7 +104,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalUpcoming}</div>
-            <p className="text-xs text-gray-500 mt-1">Click to view details</p>
+            <p className="text-xs text-gray-500 mt-1">Click to view all</p>
           </CardContent>
         </Card>
         
@@ -142,7 +119,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalCompleted}</div>
-            <p className="text-xs text-gray-500 mt-1">Click to view details</p>
+            <p className="text-xs text-gray-500 mt-1">Click to view all</p>
           </CardContent>
         </Card>
         
@@ -157,7 +134,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalCancelled}</div>
-            <p className="text-xs text-gray-500 mt-1">Click to view details</p>
+            <p className="text-xs text-gray-500 mt-1">Click to view all</p>
           </CardContent>
         </Card>
         
@@ -172,7 +149,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalRescheduled}</div>
-            <p className="text-xs text-gray-500 mt-1">Click to view details</p>
+            <p className="text-xs text-gray-500 mt-1">Click to view all</p>
           </CardContent>
         </Card>
       </div>

@@ -32,24 +32,33 @@ const ManageBooking = () => {
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Find booking by ID from the bookings array
+  console.log('ManageBooking - Looking for booking with ID:', bookingId);
+  console.log('ManageBooking - Available bookings:', bookings.map(b => ({ id: b.id, brandName: b.brandName })));
+  
+  // Find booking by ID - ensure exact match
   const booking = bookings.find(b => b.id === bookingId);
   
-  console.log('ManageBooking - Looking for booking with ID:', bookingId);
-  console.log('ManageBooking - Available bookings:', bookings);
   console.log('ManageBooking - Found booking:', booking);
   
   if (!booking) {
+    console.error('ManageBooking - Booking not found for ID:', bookingId);
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardContent className="p-6">
             <div className="text-center py-8">
               <h3 className="text-lg font-medium mb-2">Booking Not Found</h3>
-              <p className="text-gray-500 mb-4">We couldn't find the booking you're looking for.</p>
-              <Button onClick={() => navigate('/')}>
-                Return to Scheduling Page
-              </Button>
+              <p className="text-gray-500 mb-4">
+                We couldn't find the booking with ID: {bookingId}
+              </p>
+              <div className="space-y-2">
+                <Button onClick={() => navigate('/')}>
+                  Return to Scheduling Page
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/admin')}>
+                  Go to Admin Dashboard
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
