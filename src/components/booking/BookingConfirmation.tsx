@@ -47,7 +47,7 @@ const BookingConfirmation = () => {
   const teamMember = teamMembers.find(m => m.id === booking.memberId);
 
   const handleManageBooking = () => {
-    navigate(`/manage/${bookingId}`);
+    navigate(`/manage/${booking.id}`);
   };
 
   const handleNewBooking = () => {

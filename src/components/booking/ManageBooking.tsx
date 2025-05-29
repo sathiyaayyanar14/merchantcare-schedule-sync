@@ -25,14 +25,19 @@ import { toast } from 'sonner';
 
 const ManageBooking = () => {
   const { bookingId } = useParams();
-  const { getBookingByUuid, cancelBooking, rescheduleBooking, selectedTimeSlotId } = useApp();
+  const { bookings, cancelBooking, rescheduleBooking, selectedTimeSlotId } = useApp();
   const navigate = useNavigate();
   
   const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const booking = bookingId ? getBookingByUuid(bookingId) : undefined;
+  // Find booking by ID from the bookings array
+  const booking = bookings.find(b => b.id === bookingId);
+  
+  console.log('ManageBooking - Looking for booking with ID:', bookingId);
+  console.log('ManageBooking - Available bookings:', bookings);
+  console.log('ManageBooking - Found booking:', booking);
   
   if (!booking) {
     return (

@@ -55,6 +55,33 @@ const AdminDashboard = () => {
     const count = bookings.filter(b => b.memberId === member.id).length;
     return { member, count };
   }).sort((a, b) => b.count - a.count);
+
+  // Handle stat card clicks
+  const handleStatClick = (status: string) => {
+    let filteredBookings: any[] = [];
+    
+    switch (status) {
+      case 'upcoming':
+        filteredBookings = allUpcomingBookings;
+        break;
+      case 'completed':
+        filteredBookings = allPastBookings.filter(b => b.status === 'completed');
+        break;
+      case 'cancelled':
+        filteredBookings = allPastBookings.filter(b => b.status === 'cancelled');
+        break;
+      case 'rescheduled':
+        filteredBookings = bookings.filter(b => b.status === 'rescheduled');
+        break;
+    }
+    
+    if (filteredBookings.length > 0) {
+      // Navigate to the first booking's details
+      navigate(`/admin/booking/${filteredBookings[0].id}`);
+    } else {
+      toast.info(`No ${status} bookings found`);
+    }
+  };
   
   return (
     <div className="space-y-6">
@@ -89,7 +116,10 @@ const AdminDashboard = () => {
       )}
       
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleStatClick('upcoming')}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
               Upcoming Bookings
@@ -97,10 +127,14 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalUpcoming}</div>
+            <p className="text-xs text-gray-500 mt-1">Click to view details</p>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleStatClick('completed')}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
               Completed Meetings
@@ -108,10 +142,14 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalCompleted}</div>
+            <p className="text-xs text-gray-500 mt-1">Click to view details</p>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleStatClick('cancelled')}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
               Cancelled Meetings
@@ -119,10 +157,14 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalCancelled}</div>
+            <p className="text-xs text-gray-500 mt-1">Click to view details</p>
           </CardContent>
         </Card>
         
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleStatClick('rescheduled')}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
               Rescheduled Meetings
@@ -130,6 +172,7 @@ const AdminDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalRescheduled}</div>
+            <p className="text-xs text-gray-500 mt-1">Click to view details</p>
           </CardContent>
         </Card>
       </div>
@@ -152,7 +195,8 @@ const AdminDashboard = () => {
                     displayUpcomingBookings.map(booking => (
                       <div 
                         key={booking.id} 
-                        className="event-card upcoming border rounded-md p-4 bg-white shadow-sm"
+                        className="event-card upcoming border rounded-md p-4 bg-white shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => navigate(`/admin/booking/${booking.id}`)}
                       >
                         <div className="flex justify-between">
                           <h3 className="font-medium">{booking.brandName}</h3>
@@ -183,10 +227,11 @@ const AdminDashboard = () => {
                     displayPastBookings.map(booking => (
                       <div 
                         key={booking.id} 
-                        className={`event-card border rounded-md p-4 shadow-sm ${
+                        className={`event-card border rounded-md p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow ${
                           booking.status === 'completed' ? 'bg-green-50' : 
                           booking.status === 'cancelled' ? 'bg-gray-50' : 'bg-blue-50'
                         }`}
+                        onClick={() => navigate(`/admin/booking/${booking.id}`)}
                       >
                         <div className="flex justify-between">
                           <h3 className="font-medium">{booking.brandName}</h3>
