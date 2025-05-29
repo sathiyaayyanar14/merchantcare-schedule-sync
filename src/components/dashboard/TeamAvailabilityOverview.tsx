@@ -7,7 +7,7 @@ import { useApp } from '@/context/AppContext';
 import { format } from 'date-fns';
 
 const TeamAvailabilityOverview = () => {
-  const { teamMembers, timeSlots, selectedDate } = useApp();
+  const { teamMembers, timeSlots, bookings, selectedDate } = useApp();
   
   const dateString = format(selectedDate, 'yyyy-MM-dd');
   
@@ -17,14 +17,30 @@ const TeamAvailabilityOverview = () => {
       slot => slot.date === dateString && slot.memberId === member.id
     );
     
+    // Get bookings for this member on this date
+    const memberBookings = bookings.filter(
+      booking => 
+        booking.memberId === member.id && 
+        booking.timeSlot.date === dateString &&
+        booking.status !== 'cancelled'
+    );
+    
     const totalSlots = memberSlots.length;
-    const availableSlots = memberSlots.filter(slot => slot.available).length;
-    const bookedSlots = totalSlots - availableSlots;
+    const bookedSlots = memberBookings.length;
+    const availableSlots = totalSlots - bookedSlots;
     
     // Calculate percentage of availability
     const availabilityPercentage = totalSlots > 0 
       ? Math.round((availableSlots / totalSlots) * 100) 
       : 0;
+    
+    console.log(`Member ${member.name}:`, {
+      totalSlots,
+      bookedSlots,
+      availableSlots,
+      availabilityPercentage,
+      memberBookings: memberBookings.map(b => b.timeSlot.startTime)
+    });
     
     return {
       member,
