@@ -156,18 +156,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    // Update bookings state first
     setBookings(prev => {
       const updated = [...prev, newBooking];
       console.log('Updated bookings array:', updated);
       return updated;
     });
     
-    // Update the time slot availability
+    // Update the time slot availability - mark it as unavailable
     setTimeSlots(prev =>
       prev.map(ts =>
         ts.id === timeSlot.id ? { ...ts, available: false } : ts
       )
     );
+
+    // Clear the selected time slot since it's now booked
+    setSelectedTimeSlotId(null);
 
     return newBooking;
   };

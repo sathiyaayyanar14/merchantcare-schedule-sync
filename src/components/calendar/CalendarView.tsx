@@ -9,7 +9,7 @@ import { getAvailableTimeSlotsByDay, formatTime, getCurrentWeekDays } from '@/ut
 import TimeSlotsList from './TimeSlotsList';
 
 const CalendarView = () => {
-  const { selectedDate, setSelectedDate, timeSlots } = useApp();
+  const { selectedDate, setSelectedDate, timeSlots, bookings } = useApp();
   
   const weekDays = getCurrentWeekDays(selectedDate);
 
@@ -25,8 +25,37 @@ const CalendarView = () => {
     setSelectedDate(day);
   };
 
-  // Get available time slots for the selected date
-  const availableTimeSlots = getAvailableTimeSlotsByDay(timeSlots, selectedDate);
+  // Get available time slots for the selected date, excluding booked ones
+  const getFilteredAvailableSlots = (date: Date): TimeSlot[] => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    
+    // Get all time slots for this date that are marked as available
+    const availableSlots = timeSlots.filter(slot => 
+      slot.date === dateString && slot.available
+    );
+    
+    // Get all booked time slots for this date
+    const bookedSlotIds = bookings
+      .filter(booking => 
+        booking.timeSlot.date === dateString && 
+        booking.status !== 'cancelled'
+      )
+      .map(booking => booking.timeSlot.id);
+    
+    // Filter out booked slots from available slots
+    const filteredSlots = availableSlots.filter(slot => 
+      !bookedSlotIds.includes(slot.id)
+    );
+    
+    console.log('Date:', dateString);
+    console.log('Available slots before filtering:', availableSlots.length);
+    console.log('Booked slot IDs:', bookedSlotIds);
+    console.log('Filtered available slots:', filteredSlots.length);
+    
+    return filteredSlots;
+  };
+
+  const availableTimeSlots = getFilteredAvailableSlots(selectedDate);
 
   return (
     <div className="w-full">
