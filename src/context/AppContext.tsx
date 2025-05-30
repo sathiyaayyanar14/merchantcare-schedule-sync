@@ -21,6 +21,7 @@ type AppContextType = {
   getUpcomingBookings: (fromDate?: Date) => Booking[];
   getPastBookings: (toDate?: Date) => Booking[];
   updateTeamMemberCalendarStatus: (memberId: string, connected: boolean, googleCalendarId?: string) => void;
+  removeTeamMember: (memberId: string) => void;
   setTimeSlots: React.Dispatch<React.SetStateAction<TimeSlot[]>>;
 };
 
@@ -266,6 +267,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  const removeTeamMember = (memberId: string) => {
+    // Remove the team member
+    setTeamMembers(prev => prev.filter(member => member.id !== memberId));
+    
+    // Cancel all bookings for this member
+    setBookings(prev => 
+      prev.map(booking => 
+        booking.memberId === memberId 
+          ? { ...booking, status: 'cancelled' as const, updatedAt: new Date().toISOString() }
+          : booking
+      )
+    );
+    
+    // Remove their time slots
+    setTimeSlots(prev => prev.filter(slot => slot.memberId !== memberId));
+  };
+
   const getUpcomingBookings = (fromDate?: Date): Booking[] => {
     const referenceDate = fromDate || new Date();
     return bookings.filter(booking => {
@@ -328,6 +346,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     getUpcomingBookings,
     getPastBookings,
     updateTeamMemberCalendarStatus,
+    removeTeamMember,
     setTimeSlots,
   };
 

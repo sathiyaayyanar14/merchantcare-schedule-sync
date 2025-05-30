@@ -19,6 +19,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { 
   Select,
   SelectContent,
@@ -32,7 +43,7 @@ import { UserPlus, Trash2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 const TeamManagement = () => {
-  const { teamMembers } = useApp();
+  const { teamMembers, removeTeamMember } = useApp();
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [inviteForm, setInviteForm] = useState({
     name: '',
@@ -72,7 +83,7 @@ const TeamManagement = () => {
   };
 
   const handleRemoveMember = (memberId: string, memberName: string) => {
-    // In a real app, this would call an API to remove the member
+    removeTeamMember(memberId);
     toast.success(`${memberName} has been removed from the team`);
   };
 
@@ -86,7 +97,7 @@ const TeamManagement = () => {
           </div>
           <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-merchantcare-600 hover:bg-merchantcare-700">
+              <Button className="bg-blue-600 hover:bg-blue-700">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Invite Team Member
               </Button>
@@ -143,7 +154,7 @@ const TeamManagement = () => {
                   <Button type="button" variant="outline" onClick={() => setIsInviteDialogOpen(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-merchantcare-600 hover:bg-merchantcare-700">
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
                     <Mail className="mr-2 h-4 w-4" />
                     Send Invitation
                   </Button>
@@ -167,7 +178,7 @@ const TeamManagement = () => {
                   <h3 className="font-medium">{member.name}</h3>
                   <p className="text-sm text-gray-500">{member.email}</p>
                   <span className={`text-xs px-2 py-0.5 rounded mt-1 inline-block ${
-                    member.role === 'admin' ? 'bg-merchantcare-100 text-merchantcare-800' : 'bg-gray-100'
+                    member.role === 'admin' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100'
                   }`}>
                     {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                   </span>
@@ -183,14 +194,35 @@ const TeamManagement = () => {
                   </div>
                 </div>
                 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleRemoveMember(member.id, member.name)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Remove Team Member</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to remove {member.name} from the team? This action cannot be undone.
+                        All their existing bookings will be cancelled.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleRemoveMember(member.id, member.name)}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Remove Member
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           ))}

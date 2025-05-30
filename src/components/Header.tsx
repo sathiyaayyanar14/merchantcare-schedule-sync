@@ -26,9 +26,9 @@ const Header = () => {
     <header className="w-full bg-white border-b border-gray-200">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center">
-          <div className="text-merchantcare-700 font-bold text-xl mr-2">
-            <span className="text-merchantcare-500">Merchant</span>
-            Care
+          <div className="text-blue-700 font-bold text-xl mr-2">
+            <span className="text-orange-500">Gokwik</span>
+            <span className="text-blue-700"> Merchant Care</span>
           </div>
           {!isMobile && (
             <span className="text-gray-500 text-sm ml-2">Scheduling Platform</span>
@@ -46,7 +46,7 @@ const Header = () => {
           <Button
             onClick={handleBookCallClick}
             size="sm"
-            className="bg-merchantcare-600 hover:bg-merchantcare-700"
+            className="bg-blue-600 hover:bg-blue-700"
           >
             Book a Call
           </Button>
