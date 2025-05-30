@@ -10,8 +10,19 @@ const Header = () => {
   const isMobile = useIsMobile();
 
   const handleBookCallClick = () => {
-    if (location.pathname === '/') {
-      // If we're on the home page, scroll to the Schedule tab and activate it
+    const searchParams = new URLSearchParams(location.search);
+    const currentTab = searchParams.get('tab');
+    
+    if (location.pathname === '/' && currentTab === 'schedule') {
+      // If we're already on the schedule tab, scroll to the calendar
+      const calendarElement = document.querySelector('[data-testid="calendar-view"]') || 
+                             document.querySelector('.calendar-view') ||
+                             document.querySelector('[class*="calendar"]');
+      if (calendarElement) {
+        calendarElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } else if (location.pathname === '/') {
+      // If we're on the home page but not on schedule tab, activate it
       const tabsTrigger = document.querySelector('[data-value="schedule"]') as HTMLElement;
       if (tabsTrigger) {
         tabsTrigger.click();
