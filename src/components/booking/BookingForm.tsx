@@ -51,7 +51,14 @@ const BookingForm = ({ onComplete }: BookingFormProps) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Special handling for ticketId to only allow numbers
+    if (name === 'ticketId') {
+      const numericValue = value.replace(/[^0-9]/g, '');
+      setFormData(prev => ({ ...prev, [name]: numericValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
     
     // Clear error for this field when user types
     if (errors[name]) {
@@ -68,6 +75,17 @@ const BookingForm = ({ onComplete }: BookingFormProps) => {
     
     if (!formData.ticketId.trim()) {
       newErrors.ticketId = 'Ticket ID is required';
+    }
+    
+    // Validate additional guests email format if provided
+    if (formData.additionalGuests.trim()) {
+      const emails = formData.additionalGuests.split(',').map(email => email.trim()).filter(Boolean);
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const invalidEmails = emails.filter(email => !emailRegex.test(email));
+      
+      if (invalidEmails.length > 0) {
+        newErrors.additionalGuests = `Invalid email addresses: ${invalidEmails.join(', ')}`;
+      }
     }
     
     if (!selectedTimeSlotId) {
@@ -122,6 +140,11 @@ const BookingForm = ({ onComplete }: BookingFormProps) => {
     );
   }
 
+  // Count additional guests
+  const guestCount = formData.additionalGuests.trim() 
+    ? formData.additionalGuests.split(',').map(email => email.trim()).filter(Boolean).length 
+    : 0;
+
   return (
     <Card>
       <CardHeader>
@@ -152,10 +175,12 @@ const BookingForm = ({ onComplete }: BookingFormProps) => {
               name="ticketId"
               value={formData.ticketId}
               onChange={handleChange}
-              placeholder="Enter the ticket ID"
+              placeholder="Enter the ticket ID (numbers only)"
               className={errors.ticketId ? 'border-red-500' : ''}
+              inputMode="numeric"
             />
             {errors.ticketId && <p className="text-red-500 text-sm">{errors.ticketId}</p>}
+            <p className="text-xs text-gray-500">Only numerical values are accepted</p>
           </div>
           
           <div className="space-y-2">
@@ -178,8 +203,13 @@ const BookingForm = ({ onComplete }: BookingFormProps) => {
               value={formData.additionalGuests}
               onChange={handleChange}
               placeholder="Enter email addresses separated by commas"
+              className={errors.additionalGuests ? 'border-red-500' : ''}
             />
-            <p className="text-xs text-gray-500">Optional: Add colleagues who should join this call</p>
+            {errors.additionalGuests && <p className="text-red-500 text-sm">{errors.additionalGuests}</p>}
+            <p className="text-xs text-gray-500">
+              Optional: Add colleagues who should join this call. Separate multiple emails with commas.
+              {guestCount > 0 && ` (${guestCount} guest${guestCount > 1 ? 's' : ''} added)`}
+            </p>
           </div>
           
           <div className="p-4 bg-merchantcare-50 rounded-md">

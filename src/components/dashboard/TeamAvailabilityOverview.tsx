@@ -82,8 +82,11 @@ const TeamAvailabilityOverview = () => {
                 
                 <div className="text-right">
                   <Badge 
-                    className={availabilityPercentage > 50 ? 'bg-green-500' : 
-                              availabilityPercentage > 0 ? 'bg-yellow-500' : 'bg-red-500'}
+                    className={
+                      availabilityPercentage >= 75 ? 'bg-green-500' : 
+                      availabilityPercentage >= 50 ? 'bg-yellow-500' : 
+                      availabilityPercentage > 0 ? 'bg-orange-500' : 'bg-red-500'
+                    }
                   >
                     {availabilityPercentage}% Available
                   </Badge>
@@ -93,7 +96,11 @@ const TeamAvailabilityOverview = () => {
               <div className="mt-3">
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div 
-                    className="h-2.5 rounded-full bg-blue-600" 
+                    className={`h-2.5 rounded-full ${
+                      availabilityPercentage >= 75 ? 'bg-green-600' : 
+                      availabilityPercentage >= 50 ? 'bg-yellow-600' : 
+                      availabilityPercentage > 0 ? 'bg-orange-600' : 'bg-red-600'
+                    }`}
                     style={{ width: `${availabilityPercentage}%` }}
                   ></div>
                 </div>
