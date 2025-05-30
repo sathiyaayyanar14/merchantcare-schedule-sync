@@ -17,7 +17,7 @@ const TeamAvailabilityOverview = () => {
       slot => slot.date === dateString && slot.memberId === member.id
     );
     
-    // Get bookings for this member on this date
+    // Get bookings for this member on this date (exclude cancelled bookings)
     const memberBookings = bookings.filter(
       booking => 
         booking.memberId === member.id && 
@@ -34,12 +34,16 @@ const TeamAvailabilityOverview = () => {
       ? Math.round((availableSlots / totalSlots) * 100) 
       : 0;
     
-    console.log(`Member ${member.name}:`, {
+    console.log(`Member ${member.name} on ${dateString}:`, {
       totalSlots,
       bookedSlots,
       availableSlots,
       availabilityPercentage,
-      memberBookings: memberBookings.map(b => b.timeSlot.startTime)
+      memberBookings: memberBookings.map(b => ({ 
+        id: b.id, 
+        time: b.timeSlot.startTime,
+        status: b.status 
+      }))
     });
     
     return {
