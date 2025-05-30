@@ -11,6 +11,10 @@ const TeamAvailabilityOverview = () => {
   
   const dateString = format(selectedDate, 'yyyy-MM-dd');
   
+  console.log('Selected date:', dateString);
+  console.log('All bookings:', bookings);
+  console.log('All time slots:', timeSlots.filter(slot => slot.date === dateString));
+  
   // Calculate availability for each team member on the selected date
   const memberAvailability = teamMembers.map(member => {
     const memberSlots = timeSlots.filter(
@@ -42,7 +46,8 @@ const TeamAvailabilityOverview = () => {
       memberBookings: memberBookings.map(b => ({ 
         id: b.id, 
         time: b.timeSlot.startTime,
-        status: b.status 
+        status: b.status,
+        bookingDate: b.timeSlot.date
       }))
     });
     
@@ -83,9 +88,9 @@ const TeamAvailabilityOverview = () => {
                 <div className="text-right">
                   <Badge 
                     className={
-                      availabilityPercentage >= 75 ? 'bg-green-500' : 
-                      availabilityPercentage >= 50 ? 'bg-yellow-500' : 
-                      availabilityPercentage > 0 ? 'bg-orange-500' : 'bg-red-500'
+                      availabilityPercentage >= 75 ? 'bg-green-500 hover:bg-green-600' : 
+                      availabilityPercentage >= 50 ? 'bg-yellow-500 hover:bg-yellow-600' : 
+                      availabilityPercentage > 0 ? 'bg-orange-500 hover:bg-orange-600' : 'bg-red-500 hover:bg-red-600'
                     }
                   >
                     {availabilityPercentage}% Available
