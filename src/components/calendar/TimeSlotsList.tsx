@@ -31,8 +31,8 @@ const TimeSlotsList = ({ timeSlots }: TimeSlotListProps) => {
                 variant={selectedTimeSlotId === slot.id ? "default" : "outline"}
                 className={`text-sm py-2 px-3 ${
                   selectedTimeSlotId === slot.id 
-                  ? "bg-merchantcare-500 hover:bg-merchantcare-600" 
-                  : "hover:bg-merchantcare-50"
+                  ? "bg-gokwik-500 hover:bg-gokwik-600 text-white" 
+                  : "hover:bg-gokwik-50"
                 }`}
                 onClick={() => handleTimeSlotClick(slot)}
               >
