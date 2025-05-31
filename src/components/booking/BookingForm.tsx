@@ -212,7 +212,7 @@ const BookingForm = ({ onComplete }: BookingFormProps) => {
             </p>
           </div>
           
-          <div className="p-4 bg-merchantcare-50 rounded-md">
+          <div className="p-4 bg-blue-50 rounded-md">
             <h4 className="font-medium mb-1">Selected Time</h4>
             <p>{formatDate(selectedDate, 'EEEE, MMMM d, yyyy')}</p>
             <p>{formatTime(selectedTimeSlot.startTime)} - {formatTime(selectedTimeSlot.endTime)}</p>
@@ -223,7 +223,7 @@ const BookingForm = ({ onComplete }: BookingFormProps) => {
           <Button 
             type="submit" 
             disabled={isSubmitting}
-            className="bg-merchantcare-600 hover:bg-merchantcare-700"
+            className="bg-blue-600 hover:bg-blue-700"
           >
             {isSubmitting ? 'Scheduling...' : 'Schedule Meeting'}
           </Button>

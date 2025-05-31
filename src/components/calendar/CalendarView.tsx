@@ -58,7 +58,7 @@ const CalendarView = () => {
   const availableTimeSlots = getFilteredAvailableSlots(selectedDate);
 
   return (
-    <div className="w-full">
+    <div className="w-full" data-testid="calendar-view">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Select a Date & Time</h2>
         <div className="flex space-x-2">
