@@ -39,12 +39,16 @@ import {
 } from '@/components/ui/select';
 import { TeamMember } from '@/types';
 import { useApp } from '@/context/AppContext';
-import { UserPlus, Trash2, Mail } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { UserPlus, Trash2, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const TeamManagement = () => {
   const { teamMembers, removeTeamMember } = useApp();
+  const { user } = useAuth();
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [isInviting, setIsInviting] = useState(false);
   const [inviteForm, setInviteForm] = useState({
     name: '',
     email: '',
@@ -66,10 +70,26 @@ const TeamManagement = () => {
       return;
     }
 
-    // Simulate sending invitation email
+    setIsInviting(true);
+    
     try {
-      // In a real app, this would call an API to send the invitation
-      console.log('Sending invitation to:', inviteForm);
+      console.log('Sending invitation via edge function:', inviteForm);
+      
+      const { data, error } = await supabase.functions.invoke('send-team-invitation', {
+        body: {
+          name: inviteForm.name,
+          email: inviteForm.email,
+          role: inviteForm.role,
+          inviterName: user?.user_metadata?.full_name || user?.email || 'Team Admin'
+        }
+      });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+
+      console.log('Invitation sent successfully:', data);
       
       // Show success message
       toast.success(`Invitation sent to ${inviteForm.email}! They will receive an email with setup instructions.`);
@@ -77,8 +97,18 @@ const TeamManagement = () => {
       // Reset form and close dialog
       setInviteForm({ name: '', email: '', role: 'member' });
       setIsInviteDialogOpen(false);
-    } catch (error) {
-      toast.error('Failed to send invitation. Please try again.');
+      
+    } catch (error: any) {
+      console.error('Failed to send invitation:', error);
+      
+      // Show specific error message
+      if (error.message?.includes('RESEND_API_KEY')) {
+        toast.error('Email service not configured. Please contact your administrator.');
+      } else {
+        toast.error(error.message || 'Failed to send invitation. Please try again.');
+      }
+    } finally {
+      setIsInviting(false);
     }
   };
 
@@ -119,6 +149,7 @@ const TeamManagement = () => {
                       onChange={(e) => setInviteForm(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="Enter full name"
                       required
+                      disabled={isInviting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -130,6 +161,7 @@ const TeamManagement = () => {
                       onChange={(e) => setInviteForm(prev => ({ ...prev, email: e.target.value }))}
                       placeholder="Enter email address"
                       required
+                      disabled={isInviting}
                     />
                   </div>
                   <div className="space-y-2">
@@ -139,6 +171,7 @@ const TeamManagement = () => {
                       onValueChange={(value: 'admin' | 'member') => 
                         setInviteForm(prev => ({ ...prev, role: value }))
                       }
+                      disabled={isInviting}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select role" />
@@ -151,12 +184,30 @@ const TeamManagement = () => {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsInviteDialogOpen(false)}>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsInviteDialogOpen(false)}
+                    disabled={isInviting}
+                  >
                     Cancel
                   </Button>
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                    <Mail className="mr-2 h-4 w-4" />
-                    Send Invitation
+                  <Button 
+                    type="submit" 
+                    className="bg-blue-600 hover:bg-blue-700"
+                    disabled={isInviting}
+                  >
+                    {isInviting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="mr-2 h-4 w-4" />
+                        Send Invitation
+                      </>
+                    )}
                   </Button>
                 </DialogFooter>
               </form>

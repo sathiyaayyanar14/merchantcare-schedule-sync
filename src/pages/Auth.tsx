@@ -8,12 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle, Mail } from 'lucide-react';
 
 const Auth = () => {
   const navigate = useNavigate();
   const { signIn, signUp, user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState('');
   
   // Login form state
   const [loginForm, setLoginForm] = useState({
@@ -51,6 +53,8 @@ const Auth = () => {
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Invalid email or password. Please check your credentials.');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Please check your email and confirm your account before logging in.');
         } else {
           toast.error(error.message);
         }
@@ -94,6 +98,8 @@ const Auth = () => {
           toast.error(error.message);
         }
       } else {
+        setConfirmationEmail(signupForm.email);
+        setShowConfirmation(true);
         toast.success('Account created successfully! Please check your email for verification.');
       }
     } catch (error) {
@@ -107,6 +113,59 @@ const Auth = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (showConfirmation) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <CardTitle>Check your email</CardTitle>
+              <CardDescription>
+                We've sent a confirmation link to <strong>{confirmationEmail}</strong>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-md bg-blue-50 p-4">
+                <div className="flex">
+                  <Mail className="h-5 w-5 text-blue-400" />
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-blue-800">
+                      Email confirmation required
+                    </h3>
+                    <div className="mt-2 text-sm text-blue-700">
+                      <p>
+                        Click the link in your email to confirm your account. 
+                        The link will redirect you back to this site where you can then log in.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-center space-x-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowConfirmation(false)}
+                >
+                  Back to Sign Up
+                </Button>
+                <Button 
+                  onClick={() => navigate('/')}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Go to Home
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
