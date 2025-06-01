@@ -3,11 +3,21 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
+import { LogOut, User } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from 'sonner';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { user, signOut, loading } = useAuth();
 
   const handleBookCallClick = () => {
     const searchParams = new URLSearchParams(location.search);
@@ -33,6 +43,16 @@ const Header = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success('Logged out successfully');
+      navigate('/');
+    } catch (error) {
+      toast.error('Error logging out');
+    }
+  };
+
   return (
     <header className="w-full bg-white border-b border-gray-200">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -46,21 +66,60 @@ const Header = () => {
           )}
         </div>
         <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/admin')}
-            size="sm"
-            className="hidden md:flex"
-          >
-            Admin Dashboard
-          </Button>
-          <Button
-            onClick={handleBookCallClick}
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            Book a Call
-          </Button>
+          {!loading && (
+            <>
+              {user ? (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/admin')}
+                    size="sm"
+                    className="hidden md:flex"
+                  >
+                    Admin Dashboard
+                  </Button>
+                  <Button
+                    onClick={handleBookCallClick}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Book a Call
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <User className="h-4 w-4 mr-2" />
+                        {user.email}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleSignOut}>
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              ) : (
+                <>
+                  <Button
+                    onClick={handleBookCallClick}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Book a Call
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/auth')}
+                    size="sm"
+                  >
+                    Login
+                  </Button>
+                </>
+              )}
+            </>
+          )}
         </div>
       </div>
     </header>
