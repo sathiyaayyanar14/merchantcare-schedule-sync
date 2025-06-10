@@ -10,8 +10,9 @@ import {
 import { TeamMember } from '@/types';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
-import { CalendarPlus, Settings, User } from 'lucide-react';
+import { CalendarPlus, Settings, User, Share, Copy } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const TeamMembersList = () => {
   const { teamMembers, bookings } = useApp();
@@ -29,6 +30,20 @@ const TeamMembersList = () => {
       upcomingBookings: upcomingBookingsCount,
     };
   });
+
+  const handleShareLink = (memberId: string, memberName: string) => {
+    const bookingUrl = `${window.location.origin}/book/${memberId}`;
+    navigator.clipboard.writeText(bookingUrl).then(() => {
+      toast.success(`Booking link for ${memberName} copied to clipboard!`);
+    }).catch(() => {
+      toast.error('Failed to copy link to clipboard');
+    });
+  };
+
+  const handleOpenBookingPage = (memberId: string) => {
+    const bookingUrl = `${window.location.origin}/book/${memberId}`;
+    window.open(bookingUrl, '_blank');
+  };
   
   return (
     <Card>
@@ -62,17 +77,33 @@ const TeamMembersList = () => {
                   </div>
                   <div className="text-sm text-gray-500">{member.totalBookings} total bookings</div>
                   
-                  <div className="flex space-x-2 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleShareLink(member.id, member.name)}
+                    >
+                      <Copy className="mr-1 h-4 w-4" />
+                      Copy Link
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleOpenBookingPage(member.id)}
+                    >
+                      <Share className="mr-1 h-4 w-4" />
+                      View Page
+                    </Button>
                     <Link to={`/team/availability/${member.id}`}>
                       <Button variant="outline" size="sm">
                         <CalendarPlus className="mr-1 h-4 w-4" />
-                        Manage Availability
+                        Availability
                       </Button>
                     </Link>
                     <Link to={`/admin/team/${member.id}`}>
                       <Button variant="outline" size="sm">
                         <Settings className="mr-1 h-4 w-4" />
-                        Manage Bookings
+                        Bookings
                       </Button>
                     </Link>
                   </div>

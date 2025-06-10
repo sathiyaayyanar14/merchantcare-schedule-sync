@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import TeamMemberBookings from "./pages/TeamMemberBookings";
 import BookingDetails from "./pages/BookingDetails";
 import BookingsListPage from "./pages/BookingsListPage";
+import TeamMemberBooking from "./pages/TeamMemberBooking";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/team/availability" element={<TeamAvailability />} />
               <Route path="/team/availability/:memberId" element={<TeamAvailability />} />
               <Route path="/admin/team/:memberId" element={<TeamMemberBookings />} />
+              <Route path="/book/:memberId" element={<TeamMemberBooking />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

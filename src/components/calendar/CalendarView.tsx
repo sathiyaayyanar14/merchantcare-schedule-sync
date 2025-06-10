@@ -1,121 +1,84 @@
 
-import React from 'react';
-import { format, addDays, startOfWeek } from 'date-fns';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
-import { TimeSlot } from '@/types';
-import { useApp } from '@/context/AppContext';
-import { getAvailableTimeSlotsByDay, formatTime, getCurrentWeekDays } from '@/utils/dateUtils';
 import TimeSlotsList from './TimeSlotsList';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useApp } from '@/context/AppContext';
+import { format } from 'date-fns';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const CalendarView = () => {
-  const { selectedDate, setSelectedDate, timeSlots, bookings } = useApp();
-  
-  const weekDays = getCurrentWeekDays(selectedDate);
+interface CalendarViewProps {
+  memberId?: string;
+}
 
-  const handlePrevWeek = () => {
-    setSelectedDate(addDays(selectedDate, -7));
+const CalendarView = ({ memberId }: CalendarViewProps) => {
+  const { selectedDate, setSelectedDate, timeSlots, teamMembers } = useApp();
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  // Filter time slots by member if memberId is provided
+  const filteredTimeSlots = memberId 
+    ? timeSlots.filter(slot => slot.memberId === memberId)
+    : timeSlots;
+
+  const availableTimeSlots = filteredTimeSlots.filter(slot => 
+    slot.date === format(selectedDate, 'yyyy-MM-dd') && slot.available
+  );
+
+  const teamMember = memberId ? teamMembers.find(m => m.id === memberId) : null;
+
+  const goToPreviousMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
 
-  const handleNextWeek = () => {
-    setSelectedDate(addDays(selectedDate, 7));
+  const goToNextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
-  
-  const handleDayClick = (day: Date) => {
-    setSelectedDate(day);
-  };
-
-  // Get available time slots for the selected date, excluding booked ones
-  const getFilteredAvailableSlots = (date: Date): TimeSlot[] => {
-    const dateString = format(date, 'yyyy-MM-dd');
-    
-    // Get all time slots for this date that are marked as available
-    const availableSlots = timeSlots.filter(slot => 
-      slot.date === dateString && slot.available
-    );
-    
-    // Get all booked time slots for this date
-    const bookedSlotIds = bookings
-      .filter(booking => 
-        booking.timeSlot.date === dateString && 
-        booking.status !== 'cancelled'
-      )
-      .map(booking => booking.timeSlot.id);
-    
-    // Filter out booked slots from available slots
-    const filteredSlots = availableSlots.filter(slot => 
-      !bookedSlotIds.includes(slot.id)
-    );
-    
-    console.log('Date:', dateString);
-    console.log('Available slots before filtering:', availableSlots.length);
-    console.log('Booked slot IDs:', bookedSlotIds);
-    console.log('Filtered available slots:', filteredSlots.length);
-    
-    return filteredSlots;
-  };
-
-  const availableTimeSlots = getFilteredAvailableSlots(selectedDate);
 
   return (
-    <div className="w-full" data-testid="calendar-view">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Select a Date & Time</h2>
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm" onClick={handlePrevWeek}>
-            Previous Week
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleNextWeek}>
-            Next Week
-          </Button>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-7 gap-1 mb-6">
-        {weekDays.map((day, index) => {
-          const isSelected = format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
-          const today = new Date();
-          const isPast = day < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-          
-          // Check if day has slots or if it's a future date (we can generate slots for future dates)
-          const dayHasSlots = timeSlots.some(slot => 
-            slot.date === format(day, 'yyyy-MM-dd') && slot.available
-          ) || !isPast;
-          
-          return (
-            <Button
-              key={index}
-              variant={isSelected ? "default" : "outline"}
-              className={`flex flex-col items-center justify-center h-20 ${
-                isPast ? 'opacity-50' : ''
-              } ${isSelected ? 'bg-merchantcare-600 hover:bg-merchantcare-700' : ''}`}
-              disabled={isPast}
-              onClick={() => handleDayClick(day)}
-            >
-              <span className="text-xs">{format(day, 'EEE')}</span>
-              <span className="text-lg font-semibold">{format(day, 'd')}</span>
-              <span className="text-xs">{format(day, 'MMM')}</span>
+    <Card data-testid="calendar-view" className="calendar-view">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span>
+            {teamMember ? `Available Times - ${teamMember.name}` : 'Select a Date'}
+          </span>
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="sm" onClick={goToPreviousMonth}>
+              <ChevronLeft className="h-4 w-4" />
             </Button>
-          );
-        })}
-      </div>
-      
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <h3 className="text-lg font-medium mb-4">
-            Available Times for {format(selectedDate, 'EEEE, MMMM d')}
-          </h3>
-          
-          {availableTimeSlots.length > 0 ? (
-            <TimeSlotsList timeSlots={availableTimeSlots} />
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              No available time slots for this date. Please select another date.
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            <span className="text-sm font-medium min-w-[120px] text-center">
+              {format(currentMonth, 'MMMM yyyy')}
+            </span>
+            <Button variant="outline" size="sm" onClick={goToNextMonth}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          onSelect={(date) => date && setSelectedDate(date)}
+          month={currentMonth}
+          onMonthChange={setCurrentMonth}
+          className="rounded-md border"
+          disabled={(date) => {
+            const dateString = format(date, 'yyyy-MM-dd');
+            const hasSlots = filteredTimeSlots.some(slot => 
+              slot.date === dateString && slot.available
+            );
+            return date < new Date() || !hasSlots;
+          }}
+        />
+        
+        <TimeSlotsList 
+          selectedDate={selectedDate} 
+          availableSlots={availableTimeSlots}
+          showMemberInfo={!memberId}
+        />
+      </CardContent>
+    </Card>
   );
 };
 
