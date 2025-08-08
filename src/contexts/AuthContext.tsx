@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getDatabase } from '@/lib/database';
-import type { User, Session } from '@/lib/database';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
@@ -28,10 +28,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const database = getDatabase();
-    
     // Set up auth state listener FIRST
-    const { subscription } = database.onAuthStateChange(
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('Auth state changed:', event, session);
         setSession(session);
@@ -41,7 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     // THEN check for existing session
-    database.getSession().then(({ session }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -51,30 +49,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    const database = getDatabase();
-    
     // Use the Lovable project URL for redirect
     const redirectUrl = window.location.origin;
     
-    const { error } = await database.signUp(email, password, {
-      emailRedirectTo: redirectUrl,
-      data: {
-        full_name: fullName,
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: {
+          full_name: fullName,
+        }
       }
     });
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const database = getDatabase();
-    
-    const { error } = await database.signInWithPassword(email, password);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     return { error };
   };
 
   const signOut = async () => {
-    const database = getDatabase();
-    await database.signOut();
+    await supabase.auth.signOut();
   };
 
   const value = {

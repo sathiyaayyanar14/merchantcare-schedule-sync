@@ -40,7 +40,7 @@ import {
 import { TeamMember } from '@/types';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { getDatabase } from '@/lib/database';
+import { supabase } from '@/integrations/supabase/client';
 import { UserPlus, Trash2, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -74,9 +74,8 @@ const TeamManagement = () => {
     
     try {
       console.log('Sending invitation via edge function:', inviteForm);
-      const database = getDatabase();
       
-      const { data, error } = await database.functions.invoke('send-team-invitation', {
+      const { data, error } = await supabase.functions.invoke('send-team-invitation', {
         body: {
           name: inviteForm.name,
           email: inviteForm.email,
