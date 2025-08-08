@@ -8,20 +8,20 @@ Create a `.env.local` file in your project root with the following variables:
 
 ### For Supabase (Default)
 ```bash
-DB_PROVIDER=supabase
-SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_DB_PROVIDER=supabase
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
 ### For PostgreSQL
 ```bash
-DB_PROVIDER=postgresql
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=your_database_name
-DB_USER=your_username
-DB_PASSWORD=your_password
-DB_SSL=false
+VITE_DB_PROVIDER=postgresql
+VITE_DB_HOST=localhost
+VITE_DB_PORT=5432
+VITE_DB_NAME=your_database_name
+VITE_DB_USER=your_username
+VITE_DB_PASSWORD=your_password
+VITE_DB_SSL=false
 ```
 
 ## Required Database Schema for PostgreSQL
@@ -68,7 +68,7 @@ const { data, error } = await database.functions.invoke('function_name', { body:
 
 ## Switching Between Providers
 
-1. Update the `DB_PROVIDER` environment variable
+1. Update the `VITE_DB_PROVIDER` environment variable
 2. Restart your application
 3. The adapter will automatically use the correct provider
 
